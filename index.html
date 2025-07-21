@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Processor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            transition: all 0.3s ease;
+            border: 1px solid #e9ecef;
+        }
+
+        .container:hover {
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+            transform: translateY(-5px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            font-weight: 600;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            transition: all 0.3s ease;
+            background: #ffffff;
+            color: #2d3748;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #4299e1;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        }
+
+        textarea::placeholder {
+            color: #a0aec0;
+        }
+
+        .button {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 0 auto;
+            min-width: 150px;
+        }
+
+        .button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            background: #3182ce;
+            box-shadow: 0 10px 20px rgba(66, 153, 225, 0.3);
+        }
+
+        .button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+            color: #4299e1;
+        }
+
+        .spinner {
+            border: 3px solid #e2e8f0;
+            border-top: 3px solid #4299e1;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result-section {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 12px;
+            border-left: 4px solid #4299e1;
+        }
+
+        .event {
+            background: #ffffff;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+
+        .event:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+            border-color: #4299e1;
+        }
+
+        .event-title {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .event-time {
+            color: #4299e1;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .event-description {
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .download-btn {
+            background: #38a169;
+            margin-top: 20px;
+        }
+
+        .download-btn:hover {
+            background: #2f855a;
+            box-shadow: 0 10px 20px rgba(56, 161, 105, 0.3);
+        }
+
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+            border: 1px solid #feb2b2;
+        }
+
+        .placeholder-text {
+            color: #a0aec0;
+            font-style: italic;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Schedule Processor</h1>
+        
+        <div class="input-section">
+            <label for="schedule">Enter your schedule:</label>
+            <div class="placeholder-text">
+                Example: "I have a meeting with Sarah tomorrow at 2pm about the project proposal, then dinner with family at 7pm"
+            </div>
+            <textarea id="schedule" placeholder="Describe your schedule in natural language..."></textarea>
+        </div>
+
+        <button class="button" onclick="processSchedule()">Process Schedule</button>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Processing your schedule...</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="result-section" id="results">
+            <h3 style="margin-bottom: 20px; color: #2d3748;">Processed Events</h3>
+            <div id="events"></div>
+            <button class="button download-btn" onclick="downloadCalendar()">Download Calendar (.ics)</button>
+        </div>
+    </div>
+
+    <script>
+        // TODO: Replace with your actual Gemini API key
+        // For GitHub deployment security, use environment variables or GitHub Secrets
+        const GEMINI_API_KEY = 'YOUR_API_KEY_HERE';
+        const PROJECT_ID = '580368586448';
+        
+        let processedEvents = [];
+
+        async function processSchedule() {
+            const scheduleText = document.getElementById('schedule').value.trim();
+            const apiKey = GEMINI_API_KEY;
+
+            if (!scheduleText) {
+                showError('Please enter a schedule description.');
+                return;
+            }
+
+            if (apiKey === 'YOUR_API_KEY_HERE') {
+                showError('Please configure your Gemini API key in the code.');
+                return;
+            }
+
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+
+            try {
+                const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-goog-api-key': apiKey
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: `Parse the following schedule description and extract events in JSON format. For each event, provide:
+- title: Event title
+- date: Date in YYYY-MM-DD format (if not specified, assume today: ${new Date().toISOString().split('T')[0]})
+- startTime: Start time in HH:MM format (24-hour)
+- endTime: End time in HH:MM format (24-hour, estimate if not provided)
+- description: Brief description
+
+Return ONLY a valid JSON array of events, no additional text.
+
+Schedule: "${scheduleText}"`
+                            }]
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error?.message || 'API request failed');
+                }
+
+                const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                if (!generatedText) {
+                    throw new Error('No response from AI');
+                }
+
+                // Extract JSON from response
+                const jsonMatch = generatedText.match(/\[[\s\S]*\]/);
+                if (!jsonMatch) {
+                    throw new Error('Could not parse AI response as JSON');
+                }
+
+                processedEvents = JSON.parse(jsonMatch[0]);
+                displayEvents();
+
+            } catch (error) {
+                console.error('Error:', error);
+                showError(`Error processing schedule: ${error.message}`);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function displayEvents() {
+            const eventsContainer = document.getElementById('events');
+            eventsContainer.innerHTML = '';
+
+            processedEvents.forEach(event => {
+                const eventDiv = document.createElement('div');
+                eventDiv.className = 'event';
+                eventDiv.innerHTML = `
+                    <div class="event-title">${event.title}</div>
+                    <div class="event-time">${event.date} ${event.startTime} - ${event.endTime}</div>
+                    <div class="event-description">${event.description}</div>
+                `;
+                eventsContainer.appendChild(eventDiv);
+            });
+
+            document.getElementById('results').style.display = 'block';
+        }
+
+        function downloadCalendar() {
+            if (processedEvents.length === 0) {
+                showError('No events to download.');
+                return;
+            }
+
+            let icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Schedule Processor//EN
+CALSCALE:GREGORIAN
+`;
+
+            processedEvents.forEach(event => {
+                const startDateTime = formatDateTime(event.date, event.startTime);
+                const endDateTime = formatDateTime(event.date, event.endTime);
+                const uid = generateUID();
+
+                icsContent += `BEGIN:VEVENT
+UID:${uid}
+DTSTAMP:${formatDateTime(new Date().toISOString().split('T')[0], new Date().toTimeString().split(' ')[0].substring(0, 5))}
+DTSTART:${startDateTime}
+DTEND:${endDateTime}
+SUMMARY:${event.title}
+DESCRIPTION:${event.description}
+END:VEVENT
+`;
+            });
+
+            icsContent += 'END:VCALENDAR';
+
+            const blob = new Blob([icsContent], { type: 'text/calendar' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'schedule.ics';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function formatDateTime(date, time) {
+            const dateTime = new Date(`${date}T${time}:00`);
+            return dateTime.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+        }
+
+        function generateUID() {
+            return 'event-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

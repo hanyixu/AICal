@@ -1,0 +1,29 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up build directory
+      run: |
+        mkdir dist
+        cp -r public/* dist/
+
+    - name: Inject Gemini API key into index.html
+      run: |
+        sed -i "s|__GEMINI_API_KEY__|${{ secrets.GEMINI_API_KEY }}|g" dist/index.html
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./dist

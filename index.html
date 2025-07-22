@@ -82,9 +82,9 @@
         }
 
         .button {
-            background: #4299e1;
-            color: white;
-            border: none;
+            background: #fff;
+            color: #2d3748;
+            border: 2px solid #e2e8f0;
             padding: 15px 30px;
             border-radius: 25px;
             font-size: 16px;
@@ -96,10 +96,12 @@
             min-width: 150px;
         }
 
-        .button:hover:not(:disabled) {
+        .button:hover:not(:disabled), .button:focus {
             transform: translateY(-2px);
-            background: #3182ce;
-            box-shadow: 0 10px 20px rgba(66, 153, 225, 0.3);
+            background: #f1f1f1;
+            color: #1a202c;
+            box-shadow: 0 10px 20px rgba(160, 174, 192, 0.15);
+            border-color: #cbd5e1;
         }
 
         .button:disabled {
@@ -171,13 +173,16 @@
         }
 
         .download-btn {
-            background: #38a169;
+            background: #fff;
+            color: #2d3748;
+            border: 2px solid #e2e8f0;
             margin-top: 20px;
         }
-
-        .download-btn:hover {
-            background: #2f855a;
-            box-shadow: 0 10px 20px rgba(56, 161, 105, 0.3);
+        .download-btn:hover, .download-btn:focus {
+            background: #f1f1f1;
+            color: #1a202c;
+            box-shadow: 0 10px 20px rgba(160, 174, 192, 0.15);
+            border-color: #cbd5e1;
         }
 
         .error {
@@ -209,6 +214,8 @@
             </div>
             <textarea id="schedule" placeholder="Describe your schedule in natural language..."></textarea>
         </div>
+
+        <div id="current-time" style="text-align:center; color:#4a5568; font-size:18px; margin-bottom:18px;"></div>
 
         <button class="button" onclick="processSchedule()">Process Schedule</button>
 
@@ -379,6 +386,15 @@ END:VEVENT
             errorDiv.textContent = message;
             errorDiv.style.display = 'block';
         }
+
+        function updateCurrentTime() {
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            const dateTimeString = now.toLocaleString([], options);
+            document.getElementById('current-time').textContent = `Current time: ${dateTimeString}`;
+        }
+        setInterval(updateCurrentTime, 1000);
+        updateCurrentTime();
     </script>
 </body>
 </html>
